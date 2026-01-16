@@ -29,3 +29,15 @@ Subscription-based content platform backend API.
 ## API Docs
 
 Swagger will be added later.
+
+## 🔄 System Flow
+
+Clients (Flutter Mobile & Next.js Web) communicate with a single Spring Boot API.
+
+Authentication uses JWT with role-based and platform-based authorization.
+Email verification is required before login.
+
+Premium content access is controlled by an active subscription.
+Payments are handled via Paystack with webhook verification.
+
+Background jobs handle subscription expiry and reminder emails.
