@@ -1,0 +1,28 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: ${APP_NAME:ReadFlow}
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:readflow_local}
+    username: ${DB_USERNAME:readflow_user}
+    password: ${DB_PASSWORD:readflow_pass_123}
+
+  jpa:
+    hibernate:
+      ddl-auto: update # local dev only (later switch to validate)
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+
+  jackson:
+    time-zone: UTC
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
