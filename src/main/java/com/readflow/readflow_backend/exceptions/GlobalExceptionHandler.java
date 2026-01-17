@@ -4,9 +4,11 @@ import java.time.Instant;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.AuthenticationException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -52,4 +54,25 @@ public class GlobalExceptionHandler {
                 "code", "INTERNAL_ERROR",
                 "message", "Something went wrong");
     }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public Map<String, Object> badCredentials(BadCredentialsException ex, HttpServletRequest req) {
+        return Map.of(
+                "timestamp", Instant.now().toString(),
+                "path", req.getRequestURI(),
+                "code", "AUTH_FAILED",
+                "message", "Invalid email or password");
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public Map<String, Object> auth(AuthenticationException ex, HttpServletRequest req) {
+        return Map.of(
+                "timestamp", Instant.now().toString(),
+                "path", req.getRequestURI(),
+                "code", "AUTH_FAILED",
+                "message", "Authentication failed");
+    }
+
 }
