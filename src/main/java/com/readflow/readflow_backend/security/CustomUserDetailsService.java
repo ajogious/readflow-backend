@@ -21,6 +21,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         var user = userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        if (user.getStatus() == UserStatus.DEACTIVATED) {
+            throw new UsernameNotFoundException("User deactivated");
+        }
+
         boolean enabled = user.getStatus() == UserStatus.ACTIVE;
 
         return new AuthUser(
@@ -30,4 +34,5 @@ public class CustomUserDetailsService implements UserDetailsService {
                 user.getRole().name(),
                 enabled);
     }
+
 }

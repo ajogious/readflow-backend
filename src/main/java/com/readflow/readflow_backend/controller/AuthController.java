@@ -65,7 +65,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
-        // MVP: stateless JWT logout (client deletes token)
         return ResponseEntity.ok().build();
     }
+
 }
