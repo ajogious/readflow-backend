@@ -10,6 +10,11 @@ spring:
     username: ${DB_USERNAME:readflow_user}
     password: ${DB_PASSWORD:readflow_pass_123}
 
+  app:
+    jwt:
+      secret: ${JWT_SECRET:A1ZK9GGckWooOow6/2UPdIGyZfQBdlv0I/26sWbeQyw=}
+      expirationMinutes: ${JWT_EXPIRATION_MINUTES:60}
+
   jpa:
     hibernate:
       ddl-auto: validate # local dev only (later switch to validate)

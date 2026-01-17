@@ -1,0 +1,24 @@
+{
+  "properties": [
+    {
+      "name": "spring.app.jwt.secret",
+      "type": "java.lang.String",
+      "description": "A description for 'spring.app.jwt.secret'"
+    },
+    {
+      "name": "spring.app.jwt.expirationMinutes",
+      "type": "java.lang.String",
+      "description": "A description for 'spring.app.jwt.expirationMinutes'"
+    },
+    {
+      "name": "spring.datasource.app.jwt.secret",
+      "type": "java.lang.String",
+      "description": "A description for 'spring.datasource.app.jwt.secret'"
+    },
+    {
+      "name": "spring.datasource.app.jwt.expirationMinutes",
+      "type": "java.lang.String",
+      "description": "A description for 'spring.datasource.app.jwt.expirationMinutes'"
+    }
+  ]
+}
