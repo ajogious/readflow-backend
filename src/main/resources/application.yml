@@ -12,7 +12,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update # local dev only (later switch to validate)
+      ddl-auto: validate # local dev only (later switch to validate)
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
