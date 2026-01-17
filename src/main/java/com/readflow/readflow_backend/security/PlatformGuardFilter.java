@@ -25,16 +25,27 @@ public class PlatformGuardFilter extends OncePerRequestFilter {
 
         // Only enforce for protected routes (we allow public routes without platform)
         boolean isAdminRoute = path.startsWith("/admin/");
-        boolean isProtected = !(path.startsWith("/auth/") || path.equals("/health") || path.startsWith("/actuator/"));
+        boolean isPublic = path.equals("/health")
+                || path.startsWith("/actuator/")
+                || path.equals("/auth/login")
+                || path.equals("/auth/register")
+                || path.equals("/auth/verify-email")
+                || path.equals("/auth/forgot-password")
+                || path.equals("/auth/reset-password");
+
+        boolean isProtected = !isPublic;
 
         if (isProtected) {
             String platform = request.getHeader(HEADER);
-            if (!StringUtils.hasText(platform) || !(platform.equals("WEB") || platform.equals("MOBILE"))) {
+
+            if (!StringUtils.hasText(platform)
+                    || !(platform.equals("WEB") || platform.equals("MOBILE"))) {
+
                 response.setStatus(400);
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 response.getWriter()
                         .write("""
-                                {"timestamp":"","path":"%s","code":"INVALID_REQUEST","message":"X-PLATFORM header required (WEB or MOBILE)"}
+                                    {"timestamp":"","path":"%s","code":"INVALID_REQUEST","message":"X-PLATFORM header required (WEB or MOBILE)"}
                                 """
                                 .formatted(path));
                 return;
@@ -45,7 +56,7 @@ public class PlatformGuardFilter extends OncePerRequestFilter {
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 response.getWriter()
                         .write("""
-                                {"timestamp":"","path":"%s","code":"PLATFORM_NOT_ALLOWED","message":"Admin endpoints are WEB only"}
+                                    {"timestamp":"","path":"%s","code":"PLATFORM_NOT_ALLOWED","message":"Admin endpoints are WEB only"}
                                 """
                                 .formatted(path));
                 return;
