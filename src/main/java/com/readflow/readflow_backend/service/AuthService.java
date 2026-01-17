@@ -11,10 +11,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.readflow.readflow_backend.entity.EmailVerificationToken;
+import com.readflow.readflow_backend.entity.PasswordResetToken;
 import com.readflow.readflow_backend.entity.User;
 import com.readflow.readflow_backend.entity.UserRole;
 import com.readflow.readflow_backend.entity.UserStatus;
 import com.readflow.readflow_backend.repository.EmailVerificationTokenRepository;
+import com.readflow.readflow_backend.repository.PasswordResetTokenRepository;
 import com.readflow.readflow_backend.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final EmailVerificationTokenRepository tokenRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
@@ -87,4 +90,50 @@ public class AuthService {
         RANDOM.nextBytes(bytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
+
+    public void forgotPassword(String email) {
+        String normalized = email.trim().toLowerCase();
+
+        // Always succeed (security)
+        var userOpt = userRepository.findByEmailIgnoreCase(normalized);
+        if (userOpt.isEmpty())
+            return;
+
+        var user = userOpt.get();
+
+        String token = generateSecureToken();
+        Instant expiresAt = Instant.now().plus(1, ChronoUnit.HOURS);
+
+        PasswordResetToken resetToken = PasswordResetToken.builder()
+                .user(user)
+                .token(token)
+                .expiresAt(expiresAt)
+                .build();
+
+        passwordResetTokenRepository.save(resetToken);
+
+        String link = webBaseUrl + "/auth/reset-password?token=" + token;
+
+        emailService.sendEmail(
+                normalized,
+                "Reset your ReadFlow password",
+                "Click to reset your password: " + link + "\n\nThis link expires in 1 hour.");
+    }
+
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        var record = passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid token"));
+
+        if (record.isUsed())
+            throw new IllegalArgumentException("Token already used");
+        if (record.getExpiresAt().isBefore(Instant.now()))
+            throw new IllegalArgumentException("Token expired");
+
+        var user = record.getUser();
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+
+        record.setUsedAt(Instant.now());
+    }
+
 }

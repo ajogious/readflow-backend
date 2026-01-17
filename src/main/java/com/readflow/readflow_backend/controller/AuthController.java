@@ -7,10 +7,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import com.readflow.readflow_backend.dto.auth.ForgotPasswordRequest;
 import com.readflow.readflow_backend.dto.auth.LoginRequest;
 import com.readflow.readflow_backend.dto.auth.LoginResponse;
 import com.readflow.readflow_backend.dto.auth.RegisterRequest;
 import com.readflow.readflow_backend.dto.auth.RegisterResponse;
+import com.readflow.readflow_backend.dto.auth.ResetPasswordRequest;
 import com.readflow.readflow_backend.repository.UserRepository;
 import com.readflow.readflow_backend.security.AuthUser;
 import com.readflow.readflow_backend.security.JwtService;
@@ -65,6 +67,19 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
+        authService.forgotPassword(req.email());
+        return ResponseEntity.ok().build(); // always success
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam("token") String token,
+            @Valid @RequestBody ResetPasswordRequest req) {
+        authService.resetPassword(token, req.newPassword());
         return ResponseEntity.ok().build();
     }
 
