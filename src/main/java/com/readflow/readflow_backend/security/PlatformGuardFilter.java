@@ -1,6 +1,8 @@
 package com.readflow.readflow_backend.security;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.Set;
 
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,16 @@ import jakarta.servlet.http.HttpServletResponse;
 public class PlatformGuardFilter extends OncePerRequestFilter {
 
     public static final String HEADER = "X-PLATFORM";
+    private static final Set<String> ALLOWED = Set.of("WEB", "MOBILE");
+
+    // exact public endpoints (no JWT + no X-PLATFORM required)
+    private static final Set<String> PUBLIC_PATHS = Set.of(
+            "/health",
+            "/auth/login",
+            "/auth/register",
+            "/auth/verify-email",
+            "/auth/forgot-password",
+            "/auth/reset-password");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -23,46 +35,41 @@ public class PlatformGuardFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // Only enforce for protected routes (we allow public routes without platform)
         boolean isAdminRoute = path.startsWith("/admin/");
-        boolean isPublic = path.equals("/health")
-                || path.startsWith("/actuator/")
-                || path.equals("/auth/login")
-                || path.equals("/auth/register")
-                || path.equals("/auth/verify-email")
-                || path.equals("/auth/forgot-password")
-                || path.equals("/auth/reset-password");
+        boolean isActuator = path.startsWith("/actuator/");
+        boolean isPublic = isActuator || PUBLIC_PATHS.contains(path);
 
-        boolean isProtected = !isPublic;
+        if (isPublic) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-        if (isProtected) {
-            String platform = request.getHeader(HEADER);
+        // Protected => X-PLATFORM required
+        String platform = request.getHeader(HEADER);
+        platform = (platform == null) ? null : platform.trim().toUpperCase();
 
-            if (!StringUtils.hasText(platform)
-                    || !(platform.equals("WEB") || platform.equals("MOBILE"))) {
+        if (!StringUtils.hasText(platform) || !ALLOWED.contains(platform)) {
+            writeJson(response, 400, path, "INVALID_REQUEST",
+                    "X-PLATFORM header required (WEB or MOBILE)");
+            return;
+        }
 
-                response.setStatus(400);
-                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                response.getWriter()
-                        .write("""
-                                    {"timestamp":"","path":"%s","code":"INVALID_REQUEST","message":"X-PLATFORM header required (WEB or MOBILE)"}
-                                """
-                                .formatted(path));
-                return;
-            }
-
-            if (isAdminRoute && !platform.equals("WEB")) {
-                response.setStatus(403);
-                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                response.getWriter()
-                        .write("""
-                                    {"timestamp":"","path":"%s","code":"PLATFORM_NOT_ALLOWED","message":"Admin endpoints are WEB only"}
-                                """
-                                .formatted(path));
-                return;
-            }
+        // Admin endpoints are WEB-only
+        if (isAdminRoute && !"WEB".equals(platform)) {
+            writeJson(response, 403, path, "PLATFORM_NOT_ALLOWED",
+                    "Admin endpoints are WEB only");
+            return;
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void writeJson(HttpServletResponse response, int status, String path, String code, String message)
+            throws IOException {
+        response.setStatus(status);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.getWriter().write("""
+                {"timestamp":"%s","path":"%s","code":"%s","message":"%s"}
+                """.formatted(Instant.now().toString(), path, code, message));
     }
 }
