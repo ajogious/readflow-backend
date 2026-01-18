@@ -29,7 +29,7 @@ public class AuthService {
     private final EmailVerificationTokenRepository tokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
+    private final EmailSender emailSender;
 
     @Value("${spring.app.webBaseUrl:http://localhost:3000}")
     private String webBaseUrl;
@@ -65,10 +65,7 @@ public class AuthService {
 
         String link = webBaseUrl + "/auth/verify-email?token=" + token;
 
-        emailService.sendEmail(
-                normalized,
-                "Verify your ReadFlow account",
-                "Click to verify your email: " + link + "\n\nThis link expires in 24 hours.");
+        emailSender.send(user.getEmail(), "Verify your ReadFlow account", EmailTemplates.verificationEmail(link));
     }
 
     @Transactional
@@ -114,10 +111,7 @@ public class AuthService {
 
         String link = webBaseUrl + "/auth/reset-password?token=" + token;
 
-        emailService.sendEmail(
-                normalized,
-                "Reset your ReadFlow password",
-                "Click to reset your password: " + link + "\n\nThis link expires in 1 hour.");
+        emailSender.send(user.getEmail(), "Reset your ReadFlow password", EmailTemplates.resetPasswordEmail(link));
     }
 
     @Transactional
