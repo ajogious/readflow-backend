@@ -1,4 +1,4 @@
-package com.readflow.readflow_backend.controller;
+package com.readflow.readflow_backend.controller.auth;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
