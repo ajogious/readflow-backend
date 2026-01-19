@@ -9,7 +9,7 @@ import com.resend.services.emails.model.CreateEmailOptions;
 import com.resend.services.emails.model.CreateEmailResponse;
 
 @Service
-@ConditionalOnProperty(name = "app.email.provider", havingValue = "resend")
+@ConditionalOnProperty(prefix = "spring.app.email", name = "provider", havingValue = "resend")
 public class ResendEmailSender implements EmailSender {
 
     private final Resend resend;
@@ -18,8 +18,10 @@ public class ResendEmailSender implements EmailSender {
     public ResendEmailSender(
             @Value("${spring.app.email.resendApiKey}") String apiKey,
             @Value("${spring.app.email.from}") String from) {
+
         this.resend = new Resend(apiKey);
         this.from = from;
+        System.out.println("⚠ ResendEmailSender ACTIVE");
     }
 
     @Override
@@ -33,10 +35,8 @@ public class ResendEmailSender implements EmailSender {
                     .build();
 
             CreateEmailResponse data = resend.emails().send(params);
-            // optional log
             System.out.println("Resend email id: " + data.getId());
         } catch (Exception e) {
-            // fail loudly in staging/prod
             throw new RuntimeException("Failed to send email via Resend", e);
         }
     }
