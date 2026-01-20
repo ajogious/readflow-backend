@@ -37,6 +37,18 @@ public class Content extends BaseEntity {
     @Column(nullable = false, length = 20)
     private ContentStatus status; // DRAFT/PUBLISHED/UNPUBLISHED
 
+    @Column(nullable = false, unique = true, length = 255)
+    private String slug;
+
+    @Column(length = 500)
+    private String excerpt;
+
+    @Column(name = "cover_image_url")
+    private String coverImageUrl;
+
+    @Column(name = "cover_image_public_id", length = 255)
+    private String coverImagePublicId;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
