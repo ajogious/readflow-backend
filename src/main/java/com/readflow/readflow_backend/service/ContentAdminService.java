@@ -140,4 +140,19 @@ public class ContentAdminService {
         s = s.replaceAll("(^-+|-+$)", "");
         return s.isBlank() ? "content" : s;
     }
+
+    @Transactional
+    public ContentResponse togglePublish(UUID id) {
+        var content = contentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Content not found"));
+
+        if (content.getStatus() == ContentStatus.PUBLISHED) {
+            content.setStatus(ContentStatus.UNPUBLISHED);
+        } else {
+            content.setStatus(ContentStatus.PUBLISHED);
+        }
+
+        return toResponse(content);
+    }
+
 }

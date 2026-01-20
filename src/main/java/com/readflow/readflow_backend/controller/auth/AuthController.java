@@ -3,7 +3,6 @@ package com.readflow.readflow_backend.controller.auth;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +30,6 @@ public class AuthController {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final AuthService authService;
-    private final PasswordEncoder passwordEncoder; // will be use later
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest req) {

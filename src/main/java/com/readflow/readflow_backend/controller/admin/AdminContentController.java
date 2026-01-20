@@ -41,4 +41,9 @@ public class AdminContentController {
         contentAdminService.delete(id);
         return ResponseEntity.ok().build();
     }
+
+    @PatchMapping("/{id}/publish")
+    public ContentResponse togglePublish(@PathVariable UUID id) {
+        return contentAdminService.togglePublish(id);
+    }
 }
