@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.readflow.readflow_backend.dto.content.CategorySummary;
 import com.readflow.readflow_backend.dto.content.ContentDetailResponse;
 import com.readflow.readflow_backend.dto.content.ContentPublicResponse;
 import com.readflow.readflow_backend.entity.*;
@@ -67,9 +68,12 @@ public class ContentReadService {
                 c.getBody(),
                 c.getType(),
                 c.getStatus(),
-                c.getCreatedBy().getId(), // ✅ safe, just UUID
+                c.getCreatedBy().getId(),
                 c.getCreatedAt(),
-                c.getUpdatedAt());
+                c.getUpdatedAt(), c.getCategories()
+                        .stream()
+                        .map(cat -> new CategorySummary(cat.getId(), cat.getName()))
+                        .toList());
     }
 
     private ContentPublicResponse toPublic(Content c) {

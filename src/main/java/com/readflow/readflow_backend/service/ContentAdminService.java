@@ -5,11 +5,15 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.readflow.readflow_backend.dto.admin.AssignCategoriesRequest;
 import com.readflow.readflow_backend.dto.admin.ContentResponse;
 import com.readflow.readflow_backend.dto.admin.CreateContentRequest;
 import com.readflow.readflow_backend.dto.admin.UpdateContentRequest;
+import com.readflow.readflow_backend.dto.content.CategorySummary;
+import com.readflow.readflow_backend.entity.Category;
 import com.readflow.readflow_backend.entity.Content;
 import com.readflow.readflow_backend.entity.ContentStatus;
+import com.readflow.readflow_backend.repository.CategoryRepository;
 import com.readflow.readflow_backend.repository.ContentRepository;
 import com.readflow.readflow_backend.repository.UserRepository;
 import com.readflow.readflow_backend.security.AuthUser;
@@ -23,6 +27,7 @@ public class ContentAdminService {
     private final ContentRepository contentRepository;
     private final UserRepository userRepository;
     private final UploadService uploadService; // ✅ add this
+    private final CategoryRepository categoryRepository;
 
     @Transactional
     public ContentResponse create(CreateContentRequest req, AuthUser admin) {
@@ -109,7 +114,11 @@ public class ContentAdminService {
                 c.getStatus(),
                 c.getCreatedBy().getId(),
                 c.getCreatedAt(),
-                c.getUpdatedAt());
+                c.getUpdatedAt(),
+                c.getCategories()
+                        .stream()
+                        .map(cat -> new CategorySummary(cat.getId(), cat.getName()))
+                        .toList());
     }
 
     private String ensureUniqueSlug(String base, UUID currentContentId) {
@@ -155,4 +164,22 @@ public class ContentAdminService {
         return toResponse(content);
     }
 
+    @Transactional
+    public ContentResponse assignCategories(UUID contentId, AssignCategoriesRequest req) {
+        var content = contentRepository.findById(contentId)
+                .orElseThrow(() -> new IllegalArgumentException("Content not found"));
+
+        var categories = categoryRepository.findAllById(req.categoryIds());
+        if (categories.size() != req.categoryIds().size()) {
+            throw new IllegalArgumentException("One or more categories not found");
+        }
+
+        content.getCategories().clear();
+        content.getCategories().addAll(categories);
+
+        return toResponse(content);
+    }
+
 }
+
+// Isa Jibril

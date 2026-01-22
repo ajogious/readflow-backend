@@ -1,5 +1,7 @@
 package com.readflow.readflow_backend.entity;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import org.hibernate.annotations.JdbcTypeCode;
@@ -48,6 +50,11 @@ public class Content extends BaseEntity {
 
     @Column(name = "cover_image_public_id", length = 255)
     private String coverImagePublicId;
+
+    @ManyToMany
+    @JoinTable(name = "content_categories", joinColumns = @JoinColumn(name = "content_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
+    @Builder.Default
+    private Set<Category> categories = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by", nullable = false)

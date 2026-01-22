@@ -46,4 +46,11 @@ public class AdminContentController {
     public ContentResponse togglePublish(@PathVariable UUID id) {
         return contentAdminService.togglePublish(id);
     }
+
+    @PostMapping("/{id}/categories")
+    public ContentResponse assignCategories(@PathVariable UUID id,
+            @RequestBody @Valid AssignCategoriesRequest req) {
+        return contentAdminService.assignCategories(id, req);
+    }
+
 }
