@@ -1,6 +1,5 @@
 package com.readflow.readflow_backend.service;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
@@ -26,33 +25,31 @@ public class UploadService {
         validateImage(file);
 
         try {
-            // store folder/publicId so we can delete later reliably
-            String publicId = folder + "/" + UUID.randomUUID();
+            // Generate filename only (NO folder here)
+            String publicId = UUID.randomUUID().toString();
 
             Map<?, ?> result = cloudinary.uploader().upload(
                     file.getBytes(),
                     Map.of(
-                            "public_id", publicId,
+                            "folder", folder, // ✅ correct
+                            "public_id", publicId, // ✅ clean filename
                             "resource_type", "image",
                             "overwrite", true));
 
-            Object secureUrl = result.get("secure_url");
-            if (secureUrl == null) {
-                throw new RuntimeException("Upload failed: secure_url missing");
-            }
+            return new UploadResponse(
+                    result.get("secure_url").toString(),
+                    result.get("public_id").toString() // readflow/uuid
+            );
 
-            return new UploadResponse(secureUrl.toString(), publicId);
-
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read upload file", e);
         } catch (Exception e) {
             throw new RuntimeException("Cloudinary upload failed", e);
         }
     }
 
     public void deleteImageByPublicId(String publicId) {
-        if (publicId == null || publicId.isBlank())
+        if (publicId == null || publicId.isBlank()) {
             return;
+        }
 
         try {
             cloudinary.uploader().destroy(
@@ -73,8 +70,8 @@ public class UploadService {
             throw new IllegalArgumentException("Only image uploads are allowed");
         }
 
-        long max = 5L * 1024 * 1024; // 5MB
-        if (file.getSize() > max) {
+        long maxSize = 5L * 1024 * 1024; // 5MB
+        if (file.getSize() > maxSize) {
             throw new IllegalArgumentException("Image too large (max 5MB)");
         }
     }

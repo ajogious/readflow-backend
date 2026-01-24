@@ -10,7 +10,6 @@ import com.readflow.readflow_backend.dto.admin.ContentResponse;
 import com.readflow.readflow_backend.dto.admin.CreateContentRequest;
 import com.readflow.readflow_backend.dto.admin.UpdateContentRequest;
 import com.readflow.readflow_backend.dto.content.CategorySummary;
-import com.readflow.readflow_backend.entity.Category;
 import com.readflow.readflow_backend.entity.Content;
 import com.readflow.readflow_backend.entity.ContentStatus;
 import com.readflow.readflow_backend.repository.CategoryRepository;
@@ -181,5 +180,3 @@ public class ContentAdminService {
     }
 
 }
-
-// Isa Jibril

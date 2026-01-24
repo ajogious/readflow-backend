@@ -4,9 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,12 +27,10 @@ public class Content extends BaseEntity {
     private String body;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false, length = 20)
     private ContentType type; // FREE or PREMIUM
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false, length = 20)
     private ContentStatus status; // DRAFT/PUBLISHED/UNPUBLISHED
 

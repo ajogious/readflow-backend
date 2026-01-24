@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 import com.readflow.readflow_backend.dto.content.ContentDetailResponse;
 import com.readflow.readflow_backend.dto.content.ContentPublicResponse;
+import com.readflow.readflow_backend.dto.review.ReviewResponse;
 import com.readflow.readflow_backend.security.AuthUser;
 import com.readflow.readflow_backend.service.ContentReadService;
+import com.readflow.readflow_backend.service.ReviewService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/contents")
 public class ContentController {
 
+    private final ReviewService reviewService;
     private final ContentReadService contentReadService;
 
     @GetMapping("/free")
@@ -43,4 +46,8 @@ public class ContentController {
         return contentReadService.viewSingle(id, user);
     }
 
+    @GetMapping("/{id}/reviews")
+    public Page<ReviewResponse> reviews(@PathVariable UUID id, Pageable pageable) {
+        return reviewService.listForContent(id, pageable);
+    }
 }
