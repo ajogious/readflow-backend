@@ -28,12 +28,12 @@ public class UserCategoryService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ContentPublicResponse> listCategoryContents(UUID categoryId, Pageable pageable) {
+    public Page<ContentPublicResponse> listCategoryContents(UUID categoryId, Pageable pageable, String q) {
         // validate category exists
         if (!categoryRepository.existsById(categoryId)) {
             throw new IllegalArgumentException("Category not found");
         }
 
-        return contentRepository.findPublishedByCategory(categoryId, pageable);
+        return contentRepository.findPublishedByCategory(categoryId, q, pageable);
     }
 }

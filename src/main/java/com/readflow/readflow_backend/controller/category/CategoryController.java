@@ -25,7 +25,7 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}/contents")
-    public Page<ContentPublicResponse> contents(@PathVariable UUID id, Pageable pageable) {
-        return userCategoryService.listCategoryContents(id, pageable);
+    public Page<ContentPublicResponse> contents(@PathVariable UUID id, Pageable pageable, String q) {
+        return userCategoryService.listCategoryContents(id, pageable, q);
     }
 }

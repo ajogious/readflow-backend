@@ -25,21 +25,25 @@ public class ContentController {
     private final ContentReadService contentReadService;
 
     @GetMapping("/free")
-    public Page<ContentPublicResponse> free(Pageable pageable) {
-        return contentReadService.listFree(pageable);
+    public Page<ContentPublicResponse> free(
+            @RequestParam(required = false) String q,
+            Pageable pageable) {
+        return contentReadService.listFree(q, pageable);
     }
 
     @GetMapping("/premium")
     public Page<ContentPublicResponse> premium(
+            @RequestParam(required = false) String q,
             Authentication authentication,
             Pageable pageable) {
 
         AuthUser user = (AuthUser) authentication.getPrincipal();
-        return contentReadService.listPremium(user, pageable);
+        return contentReadService.listPremium(user, q, pageable);
     }
 
     @GetMapping("/{id}")
-    public ContentDetailResponse single(@PathVariable UUID id,
+    public ContentDetailResponse single(
+            @PathVariable UUID id,
             Authentication authentication) {
 
         AuthUser user = (AuthUser) authentication.getPrincipal();
@@ -47,7 +51,9 @@ public class ContentController {
     }
 
     @GetMapping("/{id}/reviews")
-    public Page<ReviewResponse> reviews(@PathVariable UUID id, Pageable pageable) {
+    public Page<ReviewResponse> reviews(
+            @PathVariable UUID id,
+            Pageable pageable) {
         return reviewService.listForContent(id, pageable);
     }
 }

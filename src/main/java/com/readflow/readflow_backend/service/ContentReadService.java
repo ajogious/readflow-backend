@@ -21,23 +21,23 @@ import lombok.RequiredArgsConstructor;
 public class ContentReadService {
 
     private final ContentRepository contentRepository;
-    private final SubscriptionService subscriptionService; // you can stub for now
+    private final SubscriptionService subscriptionService;
 
     @Transactional(readOnly = true)
-    public Page<ContentPublicResponse> listFree(Pageable pageable) {
+    public Page<ContentPublicResponse> listFree(String q, Pageable pageable) {
         return contentRepository
-                .findByStatusAndType(ContentStatus.PUBLISHED, ContentType.FREE, pageable)
+                .searchFreePublished(q, pageable)
                 .map(this::toPublic);
     }
 
     @Transactional(readOnly = true)
-    public Page<ContentPublicResponse> listPremium(AuthUser user, Pageable pageable) {
+    public Page<ContentPublicResponse> listPremium(AuthUser user, String q, Pageable pageable) {
         if (!subscriptionService.isSubscriptionActive(user.getId())) {
             throw new SecurityException("Active subscription required");
         }
 
         return contentRepository
-                .findByStatusAndType(ContentStatus.PUBLISHED, ContentType.PREMIUM, pageable)
+                .searchPremiumPublished(q, pageable)
                 .map(this::toPublic);
     }
 
@@ -70,7 +70,8 @@ public class ContentReadService {
                 c.getStatus(),
                 c.getCreatedBy().getId(),
                 c.getCreatedAt(),
-                c.getUpdatedAt(), c.getCategories()
+                c.getUpdatedAt(),
+                c.getCategories()
                         .stream()
                         .map(cat -> new CategorySummary(cat.getId(), cat.getName()))
                         .toList());
