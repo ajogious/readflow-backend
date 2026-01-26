@@ -96,6 +96,10 @@ public class PlatformGuardFilter extends OncePerRequestFilter {
     public static final String HEADER = "X-PLATFORM";
     private static final Set<String> ALLOWED = Set.of("WEB", "MOBILE", "POSTMAN");
 
+    private static final Set<String> SWAGGER_PATH_PREFIXES = Set.of(
+            "/v3/api-docs",
+            "/swagger-ui");
+
     private static final Set<String> EXACT_PUBLIC_PATHS = Set.of(
             "/health",
             "/auth/login",
@@ -154,6 +158,13 @@ public class PlatformGuardFilter extends OncePerRequestFilter {
 
         if (isActuator)
             return true;
+
+        // Swagger / OpenAPI
+        for (String swaggerPath : SWAGGER_PATH_PREFIXES) {
+            if (path.startsWith(swaggerPath)) {
+                return true;
+            }
+        }
 
         if (EXACT_PUBLIC_PATHS.contains(path))
             return true;
