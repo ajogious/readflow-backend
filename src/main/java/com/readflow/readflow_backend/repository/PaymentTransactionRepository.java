@@ -11,4 +11,5 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
     Optional<PaymentTransaction> findByReference(String reference);
 
     boolean existsByReference(String reference);
+
 }

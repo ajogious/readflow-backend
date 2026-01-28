@@ -38,6 +38,10 @@ public class PaymentTransaction extends BaseEntity {
     @Column(nullable = false, length = 10)
     private String currency; // e.g. NGN
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "plan_id", nullable = false)
+    private SubscriptionPlan plan;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false, length = 20)

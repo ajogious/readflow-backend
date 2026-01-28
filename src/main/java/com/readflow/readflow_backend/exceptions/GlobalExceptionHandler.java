@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -14,7 +15,8 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -31,101 +33,159 @@ public class GlobalExceptionHandler {
                 "message", message);
     }
 
-    // ===== Auth =====
+    // =========================
+    // AUTH
+    // =========================
 
     @ExceptionHandler(DisabledException.class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    public Map<String, Object> disabled(DisabledException ex, HttpServletRequest req) {
-        return err(req, "EMAIL_NOT_VERIFIED", "Please verify your email before logging in");
+    public ResponseEntity<Map<String, Object>> disabled(
+            DisabledException ex,
+            HttpServletRequest req) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(err(req, "EMAIL_NOT_VERIFIED", "Please verify your email before logging in"));
     }
 
     @ExceptionHandler({ UsernameNotFoundException.class, BadCredentialsException.class })
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public Map<String, Object> badCredentials(Exception ex, HttpServletRequest req) {
-        return err(req, "AUTH_FAILED", "Invalid email or password");
+    public ResponseEntity<Map<String, Object>> badCredentials(
+            Exception ex,
+            HttpServletRequest req) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(err(req, "AUTH_FAILED", "Invalid email or password"));
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public Map<String, Object> auth(AuthenticationException ex, HttpServletRequest req) {
-        return err(req, "AUTH_FAILED", "Authentication failed");
+    public ResponseEntity<Map<String, Object>> auth(
+            AuthenticationException ex,
+            HttpServletRequest req) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(err(req, "AUTH_FAILED", "Authentication failed"));
     }
 
-    // ===== Validation & Request shape =====
+    // =========================
+    // VALIDATION & REQUEST SHAPE
+    // =========================
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, Object> validation(MethodArgumentNotValidException ex, HttpServletRequest req) {
-        String msg = "Validation failed";
-        FieldError first = ex.getBindingResult().getFieldErrors().stream().findFirst().orElse(null);
+    public ResponseEntity<Map<String, Object>> validation(
+            MethodArgumentNotValidException ex,
+            HttpServletRequest req) {
+        String message = "Validation failed";
+
+        FieldError first = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .findFirst()
+                .orElse(null);
+
         if (first != null) {
-            msg = first.getField() + ": " + first.getDefaultMessage();
+            message = first.getField() + ": " + first.getDefaultMessage();
         }
-        return err(req, "VALIDATION_ERROR", msg);
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(err(req, "VALIDATION_ERROR", message));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, Object> unreadable(HttpMessageNotReadableException ex, HttpServletRequest req) {
-        return err(req, "INVALID_JSON", "Request body is invalid or malformed JSON");
+    public ResponseEntity<Map<String, Object>> unreadable(
+            HttpMessageNotReadableException ex,
+            HttpServletRequest req) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(err(req, "INVALID_JSON", "Request body is invalid or malformed JSON"));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, Object> typeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest req) {
-        // handles bad UUIDs in path etc.
-        return err(req, "INVALID_REQUEST", "Invalid parameter: " + ex.getName());
+    public ResponseEntity<Map<String, Object>> typeMismatch(
+            MethodArgumentTypeMismatchException ex,
+            HttpServletRequest req) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(err(req, "INVALID_REQUEST", "Invalid parameter: " + ex.getName()));
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, Object> missingParam(MissingServletRequestParameterException ex, HttpServletRequest req) {
-        return err(req, "INVALID_REQUEST", "Missing query parameter: " + ex.getParameterName());
+    public ResponseEntity<Map<String, Object>> missingParam(
+            MissingServletRequestParameterException ex,
+            HttpServletRequest req) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(err(req, "INVALID_REQUEST", "Missing query parameter: " + ex.getParameterName()));
     }
 
     @ExceptionHandler(MissingRequestHeaderException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, Object> missingHeader(MissingRequestHeaderException ex, HttpServletRequest req) {
-        return err(req, "INVALID_REQUEST", "Missing header: " + ex.getHeaderName());
+    public ResponseEntity<Map<String, Object>> missingHeader(
+            MissingRequestHeaderException ex,
+            HttpServletRequest req) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(err(req, "INVALID_REQUEST", "Missing header: " + ex.getHeaderName()));
     }
 
-    // ===== Application =====
+    // =========================
+    // APPLICATION
+    // =========================
 
     @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, Object> badRequest(IllegalArgumentException ex, HttpServletRequest req) {
-        return err(req, "INVALID_REQUEST", ex.getMessage());
+    public ResponseEntity<Map<String, Object>> badRequest(
+            IllegalArgumentException ex,
+            HttpServletRequest req) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(err(req, "INVALID_REQUEST", ex.getMessage()));
     }
 
     @ExceptionHandler(SecurityException.class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    public Map<String, Object> forbidden(SecurityException ex, HttpServletRequest req) {
-        return err(req, "FORBIDDEN", ex.getMessage());
+    public ResponseEntity<Map<String, Object>> forbidden(
+            SecurityException ex,
+            HttpServletRequest req) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(err(req, "FORBIDDEN", ex.getMessage()));
     }
 
     @ExceptionHandler(ResponseStatusException.class)
-    public Map<String, Object> responseStatus(ResponseStatusException ex, HttpServletRequest req) {
+    public ResponseEntity<Map<String, Object>> responseStatus(
+            ResponseStatusException ex,
+            HttpServletRequest req) {
         HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());
-        return Map.of(
-                "timestamp", Instant.now().toString(),
-                "path", req.getRequestURI(),
-                "code", status == HttpStatus.NOT_FOUND ? "NOT_FOUND" : "REQUEST_FAILED",
-                "message", ex.getReason() != null ? ex.getReason() : "Request failed");
+
+        String code = status == HttpStatus.NOT_FOUND
+                ? "NOT_FOUND"
+                : "REQUEST_FAILED";
+
+        String message = ex.getReason() != null
+                ? ex.getReason()
+                : "Request failed";
+
+        return ResponseEntity
+                .status(status)
+                .body(err(req, code, message));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
-    public Map<String, Object> methodNotAllowed(HttpRequestMethodNotSupportedException ex, HttpServletRequest req) {
-        return err(req, "METHOD_NOT_ALLOWED", "Method not allowed");
+    public ResponseEntity<Map<String, Object>> methodNotAllowed(
+            HttpRequestMethodNotSupportedException ex,
+            HttpServletRequest req) {
+        return ResponseEntity
+                .status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(err(req, "METHOD_NOT_ALLOWED", "Method not allowed"));
     }
 
-    // ===== Fallback =====
+    // =========================
+    // FALLBACK
+    // =========================
 
     @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, Object> general(Exception ex, HttpServletRequest req) {
-        // Optional: print stacktrace in local only
-        // ex.printStackTrace();
-        return err(req, "INTERNAL_ERROR", "Something went wrong");
+    public ResponseEntity<Map<String, Object>> general(
+            Exception ex,
+            HttpServletRequest req) {
+        // Optional: log.error("Unhandled exception", ex);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(err(req, "INTERNAL_ERROR", "Something went wrong"));
     }
 }

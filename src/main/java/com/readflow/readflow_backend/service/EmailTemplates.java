@@ -1,5 +1,9 @@
 package com.readflow.readflow_backend.service;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
 public class EmailTemplates {
 
   private EmailTemplates() {
@@ -31,5 +35,20 @@ public class EmailTemplates {
             </div>
         """
         .formatted(resetLink, resetLink, resetLink);
+  }
+
+  public static String paymentConfirmation(String planName, Instant end) {
+    String endDate = DateTimeFormatter.ofPattern("MMM dd, yyyy")
+        .withZone(ZoneId.systemDefault())
+        .format(end);
+
+    return """
+            <div style="font-family:Arial,sans-serif;line-height:1.5">
+              <h2>Payment Successful 🎉</h2>
+              <p>Your subscription to <b>%s</b> is now active.</p>
+              <p>Valid until: <b>%s</b></p>
+              <p>Thank you for choosing ReadFlow ❤️</p>
+            </div>
+        """.formatted(planName, endDate);
   }
 }

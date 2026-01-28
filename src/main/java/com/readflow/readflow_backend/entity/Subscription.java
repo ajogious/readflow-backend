@@ -3,9 +3,6 @@ package com.readflow.readflow_backend.entity;
 import java.time.Instant;
 import java.util.UUID;
 
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,20 +23,20 @@ public class Subscription extends BaseEntity {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(nullable = false, length = 20)
-    private SubscriptionStatus status; // ACTIVE/EXPIRED/CANCELLED
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "plan_id")
+    private SubscriptionPlan plan;
 
-    @Column(name = "start_date", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SubscriptionStatus status;
+
+    @Column(nullable = false)
     private Instant startDate;
 
-    @Column(name = "end_date", nullable = false)
+    @Column(nullable = false)
     private Instant endDate;
-
-    @Column(nullable = false, length = 50)
-    private String plan; // e.g. "MONTHLY"
 }
